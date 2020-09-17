@@ -29,6 +29,10 @@ void introMessage () {
 
 int translateFile (string fileName, string compileName="index.js") {
   ifstream js(fileName);
+  if(!js) {
+    cout << "ERROR: " << fileName << " was not found" << endl;
+    return -1;
+  }
   vector<string>strVector;
   std::string str((std::istreambuf_iterator<char>(js)),
                 std::istreambuf_iterator<char>());
@@ -51,7 +55,7 @@ int translateFile (string fileName, string compileName="index.js") {
       if(!powerjsImport) {
         cout << fileName << " has an invalid import." << endl;
         cout << "check the file if there is no imports in current directory." << endl;
-        cout << "\033[1;31mERROR\033[0m: the import " << originalName << " isnt found!" << endl;
+        cout << "ERROR: the import " << originalName << " isnt found!" << endl;
         return -1;
       } else {
         std::string importStr((std::istreambuf_iterator<char>(powerjsImport)),
@@ -64,7 +68,7 @@ int translateFile (string fileName, string compileName="index.js") {
   ofstream output(compileName);
   output << fullString;
   output.close();
-  cout << "\033[1;32mDONE\033[m\nTranslated all imports and " << fileName << " to: " << compileName << endl;
+  cout << "DONE\nTranslated all imports and " << fileName << " to: " << compileName << endl;
   return 0;
 }
 
