@@ -9,7 +9,7 @@ using namespace std;
 string version = "1.0.0";
 
 
-bool endsWith(const std::string &mainStr, const std::string &toMatch)
+bool endsWith(const string &mainStr, const string &toMatch)
 {
     if(mainStr.size() >= toMatch.size() &&
             mainStr.compare(mainStr.size() - toMatch.size(), toMatch.size(), toMatch) == 0)
@@ -34,8 +34,8 @@ int translateFile (string fileName, string compileName="index.js") {
     return -1;
   }
   vector<string>strVector;
-  std::string str((std::istreambuf_iterator<char>(js)),
-                std::istreambuf_iterator<char>());
+  string str((istreambuf_iterator<char>(js)),
+                istreambuf_iterator<char>());
   istringstream strStream(str);
 
   string fullString = "";
@@ -58,8 +58,8 @@ int translateFile (string fileName, string compileName="index.js") {
         cout << "ERROR: the import " << originalName << " isnt found!" << endl;
         return -1;
       } else {
-        std::string importStr((std::istreambuf_iterator<char>(powerjsImport)),
-                              std::istreambuf_iterator<char>());
+        string importStr((istreambuf_iterator<char>(powerjsImport)),
+                              istreambuf_iterator<char>());
         lineString.replace(lineString.begin(),lineString.end(), importStr);
       }
     }
