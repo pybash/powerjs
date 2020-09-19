@@ -1,7 +1,8 @@
 import standalonelib
 import lib/testlib
 
-standalonelib().then((e) => {
-console.log(e)
-})
-console.log(folderLib())
+standalonelib promise() {
+  printl(promise)
+}
+
+printl(folderLib())
