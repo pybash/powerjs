@@ -1,3 +1,6 @@
+/*
+  powerjs is an attempt to make javascript more readable and easier to maintain.
+*/
 #include <iostream>
 #include <string>
 #include <fstream>
@@ -27,6 +30,42 @@ void introMessage () {
   cout << " -version             get translator version" << endl;
 }
 
+string replaceAll(string input, string toReplace, string replaceWith) {
+  string outputText = input;
+  while(outputText.find(toReplace) != string::npos) {
+    size_t pos = input.find(toReplace);
+    outputText = outputText.replace(pos, toReplace.length(), replaceWith);
+  }
+  return outputText;
+}
+
+string replaceFunctions(string strData) {
+  strData = replaceAll(strData, "printl", "console.log");
+  for(int first = 0, second = 11; second <= strData.length(); first++, second++) {
+    if(strData.substr(first,second) == "promise() {" || strData.substr(first,second - 1) == "promise(){") {
+      int functionNameEnd = first;
+      int functionNameBegin;
+      for(int functionNameInt = first - 2; functionNameInt >= 0; functionNameInt--) {
+        if(functionNameInt == 0) {
+          functionNameBegin = functionNameInt;
+        } else if(strData[functionNameInt] == ' ') {
+          functionNameBegin = functionNameInt;
+          break;
+        }
+      }
+      string functionName = strData.substr(functionNameBegin,functionNameEnd);
+      string workAsync = functionName.substr(0, functionName.length() - 1) + "().then((promise)=> {";
+      strData.replace(first - functionName.length(), second, workAsync);
+    }
+  }
+  return strData;
+}
+
+string translateLibrary (string libData) {
+  libData = replaceFunctions(libData);
+  return libData;
+}
+
 int translateFile (string fileName, string compileName="index.js") {
   ifstream js(fileName);
   if(!js) {
@@ -48,6 +87,10 @@ int translateFile (string fileName, string compileName="index.js") {
   for(int i = 0; i < strVector.size(); i++) {
     string lineString = string(strVector[i]);
     if(lineString.substr(0,6) == "import") {
+      if(lineString.size() == 6) {
+        cout << "ERROR: an import was left without a library to account for" << endl;
+        return -1;
+      }
       string importName = lineString.substr(7) + ".powerjs";
       string originalName = lineString.substr(7);
       ifstream powerjsImport;
@@ -60,10 +103,29 @@ int translateFile (string fileName, string compileName="index.js") {
       } else {
         string importStr((istreambuf_iterator<char>(powerjsImport)),
                               istreambuf_iterator<char>());
+        importStr = translateLibrary(importStr);
         lineString.replace(lineString.begin(),lineString.end(), importStr);
       }
     }
+    lineString = replaceFunctions(lineString);
     fullString += lineString + "\n";
+  }
+  while(fullString.find("then((promise)=> {") != string::npos) {
+    size_t pos = fullString.find("then((promise)=> {");
+    int bracketCount = 1;
+    for(int character = int(pos) + 19; character <= fullString.length(); character++) {
+      if(bracketCount == 0) {
+        fullString.replace(character - 1, 2, "})");
+        break;
+      }
+      if(fullString[character] == '{') {
+        bracketCount++;
+      }
+      if(fullString[character] == '}') {
+        bracketCount--;
+      }
+    }
+     fullString.replace(pos, string("then((promise) => {").length(), "then((promise) => {\n");
   }
   ofstream output(compileName);
   output << fullString;
