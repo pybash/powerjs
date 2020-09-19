@@ -115,7 +115,7 @@ int translateFile (string fileName, string compileName="index.js") {
     int bracketCount = 1;
     for(int character = int(pos) + 19; character <= fullString.length(); character++) {
       if(bracketCount == 0) {
-        fullString.replace(character - 1, 2, "})");
+        fullString.replace(character - 1, 2, "})\n");
         break;
       }
       if(fullString[character] == '{') {
