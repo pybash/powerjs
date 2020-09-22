@@ -11,6 +11,18 @@
 using namespace std;
 string version = "1.0.0";
 
+bool ifSubstr(string inputText, string comparison, int min) {
+  int max = min + comparison.length() - 1;
+  string stringSubstr = "";
+  for(int i = min; i <= max; i++) {
+    stringSubstr += inputText[i];
+  }
+  if(stringSubstr == comparison) {
+    return true;
+  } else {
+    return false;
+  }
+}
 
 bool endsWith(const string &mainStr, const string &toMatch)
 {
@@ -40,7 +52,6 @@ string replaceAll(string input, string toReplace, string replaceWith) {
 }
 
 string replaceFunctions(string strData) {
-  strData = replaceAll(strData, "printl", "console.log");
   for(int first = 0, second = 11; second <= strData.length(); first++, second++) {
     if(strData.substr(first,second) == "promise() {" || strData.substr(first,second - 1) == "promise(){") {
       int functionNameEnd = first;
@@ -67,6 +78,8 @@ string translateLibrary (string libData) {
 }
 
 int translateFile (string fileName, string compileName="index.js") {
+  bool isInString = false;
+  int recentQuote = 0;
   ifstream js(fileName);
   if(!js) {
     cout << "ERROR: " << fileName << " was not found" << endl;
@@ -126,6 +139,26 @@ int translateFile (string fileName, string compileName="index.js") {
       }
     }
      fullString.replace(pos, string("then((promise) => {").length(), "then((promise) => {\n");
+  }
+  for(int charNum = 0; charNum < fullString.length(); charNum++) {
+    if(fullString[charNum] == '"') {
+      recentQuote = charNum;
+      isInString = !isInString;
+    }
+    if(!isInString){
+      if(ifSubstr(fullString, "def", charNum)) {
+        fullString.replace(charNum, string("def").length(), "function");
+      }
+      if(ifSubstr(fullString, "printl", charNum)) {
+        fullString.replace(charNum, string("printl").length(), "console.log");
+      }
+    }
+  }
+  
+  // Error checks
+  if(isInString) {
+    cout << "ERROR: Script contains never ending string. Starting at "<< recentQuote << endl;
+    return -1;
   }
   ofstream output(compileName);
   output << fullString;
